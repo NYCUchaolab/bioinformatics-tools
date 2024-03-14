@@ -21,8 +21,8 @@ samplesheet_path="${project_dir}/gdc_sample_sheet.2024-02-26.tsv"
 # mkdir -p variants_calling
 # mkdir -p variants_calling/MuSE
 
-# col 6 sample_ID TCGA-4G-AAZR
-sample_IDs=($(tail -n +2 ${samplesheet_path} | cut -f 6))
+# col 6 sample_ID TCGA-4G-AAZR sort 並去除重複
+sample_IDs=($(tail -n +2 ${samplesheet_path} | cut -f 6 | sort -u))
 
 # for sampleID in sample_IDs
 for sample_ID in "${sample_IDs[@]}"

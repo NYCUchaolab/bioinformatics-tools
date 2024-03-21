@@ -33,7 +33,7 @@ run_varscan(){
     
     java -jar ${varscan} processSomatic \
     "./variants_calling/varscan/${sample_ID}.varscan.indel.vcf" \
-    --min-tumor-freq 0.1
+    --min-tumor-freq 0.1 \
     --max-normal-freq 0.05 \
     --p-value 0.07
     echo "step3 processSomatic ${sample_ID} done"

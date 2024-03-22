@@ -15,6 +15,30 @@ run_mutect(){
     -pon ${pon} \
     -O "${mutect_dir}/${case_ID}.vcf" > "${mutect_dir}/log/${case_ID}.log" 2>&1
     
+    gatk GetPileupSummaries \
+    -I ${tumor_file} \
+    -V ${small_exac} \
+    -L ${small_exac}  \
+    -O "${mutect_dir}/${case_ID}-01A.pileups.table" >> "${mutect_dir}/log/${case_ID}.log" 2>&1
+
+    gatk GetPileupSummaries \
+    -I ${normal_file} \
+    -V ${small_exac} \
+    -L ${small_exac}  \
+    -O "${mutect_dir}/${case_ID}-11A.pileups.table"
+
+    gatk CalculateContamination \
+    -I "${mutect_dir}/${case_ID}-01A.pileups.table" \
+    -matched "${mutect_dir}/${case_ID}-11A.pileups.table" \
+    -O "${mutect_dir}/${case_ID}.contamination.table" \
+    -tumor-segmentation "${mutect_dir}/${case_ID}.segments.table" >> "${mutect_dir}/log/${case_ID}.log" 2>&1
+
+    gatk FilterMutectCalls \
+    -V "${mutect_dir}/${case_ID}.vcf" \
+    --tumor-segmentation "${mutect_dir}/${case_ID}.segments.table" \
+    --contamination-table "${mutect_dir}/${case_ID}.contamination.table" \
+    -O "${mutect_dir}/${case_ID}.filtered.vcf" \
+    -R ${ref_fa} >> "${mutect_dir}/log/${case_ID}.log" 2>&1
 
 }
 

@@ -36,7 +36,7 @@ bqsr(){
 		-R ${ref_fa} \
 		-I "${output_bam_dir}/${sample_ID}.re.sorted.du.bam" \
 		-O "${output_bam_dir}/${sample_ID}.re.sorted.du.bqsr.bam" \
-		--bqsr-recal-file ${sample_ID}.recalibration_report.txt
+		--bqsr-recal-file "${output_bam_dir}/${sample_ID}.recalibration_report.txt"
 }
 
 # config 

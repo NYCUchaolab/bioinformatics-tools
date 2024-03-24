@@ -2,8 +2,8 @@
 run_varscan(){
 
     sample_ID=${1}
-    normal="${sample_ID}-01A"
-    tumor="${sample_ID}-11A"
+    tumor="${case_ID}-01A"
+    normal="${case_ID}-11A"
 
     # Step 1: Mpileup; Samtools
     samtools mpileup \

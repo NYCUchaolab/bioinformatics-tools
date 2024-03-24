@@ -26,8 +26,8 @@ mkdir -p ${cnv_output_dir}
 mkdir -p ${cnv_output_dir}/log
 cd ${project_dir}
 
-cnvkit.py batch ${project_dir}/${input_bam_dir}/*11A*.bam \
-        --normal ${project_dir}/${input_bam_dir}/*01A*.bam \
+cnvkit.py batch ${project_dir}/${input_bam_dir}/*01A*.bam \
+        --normal ${project_dir}/${input_bam_dir}/*11A*.bam \
         --targets ${illumina_bed} --annotate ${refFlat} \
         --fasta ${ref_fa} --access ${access} -p ${threads}\
         --output-reference ${cnv_output_dir}/cnv_ref.cnn --output-dir ${cnv_output_dir} \

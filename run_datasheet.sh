@@ -28,8 +28,8 @@ sample_IDs=($(tail -n +2 ${samplesheet_path} | cut -f 6 | sort -u))
 for sample_ID in "${sample_IDs[@]}"
 do
     echo "${sample_ID}"
-    normal="${sample_ID}_01A"
-    tumor="${sample_ID}_11A"
+    tumor="${sample_ID}_01A"
+    normal="${sample_ID}_11A"
     echo ${normal}
     echo ${tumor}
 done

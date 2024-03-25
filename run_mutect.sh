@@ -41,6 +41,14 @@ run_mutect(){
     -O "${mutect_dir}/${case_ID}.filtered.vcf" \
     -R ${ref_fa} >> "${mutect_dir}/log/${case_ID}.log" 2>&1
 
+    bcftools norm \
+    -m-any \
+    -cx\
+    --check-ref \
+    -xw \
+    -f ${ref_fa} \
+    "${mutect_dir}/${case_ID}.filtered.vcf" \
+    -o "${mutect_dir}/${case_ID}.splited.vcf" >> "${mutect_dir}/log/${case_ID}.log" 2>&1
 }
 
 

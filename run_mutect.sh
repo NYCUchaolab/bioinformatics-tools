@@ -12,6 +12,7 @@ run_mutect(){
     -tumor "${case_ID}-11A" \
     -normal "${case_ID}-01A" \
     --germline-resource ${germline} \
+    --native-pair-hmm-threads 20 \
     -pon ${pon} \
     -O "${mutect_dir}/${case_ID}.vcf" > "${mutect_dir}/log/${case_ID}.log" 2>&1
     

@@ -8,78 +8,18 @@ pd.set_option('future.no_silent_downcasting', True)
 # config
 project_dir = "/home/data/dataset/CHOL_10sample/"
 os.chdir(project_dir)
-output_merged_vcf_path = "./variants_calling/all_samples_2callers.merged.vcf"
-output_stat_path = "./variants_calling/all_samples_2callers.stat.csv"
-output_venn_path = "./variants_calling/all_samples_2callers.venn.png"
+variants_calling_dir = "./variants_calling"
+output_merged_vcf_path = f"{variants_calling_dir}/all_samples_2callers.merged.vcf"
+output_stat_path = f"{variants_calling_dir}/all_samples_2callers.stat.csv"
+output_venn_path = f"{variants_calling_dir}/all_samples_2callers.venn.png"
 sample_sheet_path = "./gdc_sample_sheet.2024-02-26.tsv"
-sample_sheet = pd.read_csv(sample_sheet_path, sep="\t")
-unique_case_IDs = sample_sheet.loc[:, "Case ID"].unique() 
-
-all_case_df = pd.DataFrame()
-all_case_stat = pd.DataFrame()
 caller_list = ["muse", "mutect2", "varscan"]
-caller_stat_df = pd.DataFrame(columns=["all"] 
-                                    + [f"{caller}_raw" for caller in caller_list]
-                                    + [f"{caller}_filtered" for caller in caller_list]
-                                    + ["2_caller"],
-                              index=pd.Index(unique_case_IDs, name="case_ID"))
-caller_stat_df.index.name = "case_ID"
 
-for case_ID in unique_case_IDs: # "TCGA-W5-AA2R" # progressing bar
-    
-    result_dict = {
-        "muse": preprocess_vcf(vcf_file=f"./variants_calling/muse/{case_ID}.MuSE.vcf"),
-        "mutect2": preprocess_vcf(vcf_file=f"./variants_calling/mutect/{case_ID}.splited.vcf"),
-        "varscan": pd.concat([
-            preprocess_vcf(vcf_file=f"./variants_calling/varscan/{case_ID}.varscan.indel.Somatic.hc.vcf"),
-            preprocess_vcf(vcf_file=f"./variants_calling/varscan/{case_ID}.varscan.snp.Somatic.hc.vcf")
-        ])
-    }
-
-    # merge dataframes
-    case_df = pd.DataFrame()
-    for package_name, caller_df in result_dict.items():
-        caller_stat_df.loc[case_ID, f"{package_name}_raw"] = len(caller_df)
-        filtered_df = vcf_df_filter(caller_df)
-        caller_stat_df.loc[case_ID, f"{package_name}_filtered"] = len(filtered_df)
-        filtered_df = pd.DataFrame(True, index=filtered_df.index, columns=[package_name])
-        case_df = pd.concat([case_df, filtered_df], axis=1)
-    
-    case_df = case_df.fillna(False).infer_objects(copy=False)
-    caller_2hit_filter = case_df.loc[:, caller_list].sum(axis=1) >= 2
-    caller_stat_df.loc[case_ID, "all"] = len(case_df)
-    caller_stat_df.loc[case_ID, "2_caller"] = caller_2hit_filter.sum()
-    
-    case_df["case"] = case_ID
-    all_case_df = pd.concat([all_case_df, case_df])
-    print(f"{case_ID} is merged")
-
-# all_case_df
-all_case_df_gb = all_case_df.groupby(all_case_df.index)
-all_case_df.groupby("case").size()
-
-# merge same ID
-all_case_df_dedup = all_case_df_gb.agg({'muse':'max',
-                                          'mutect2':'max',
-                                          'varscan':'max',
-                                          'case': lambda x: ','.join(x)})
-callers_2_hit = all_case_df_dedup.loc[:, caller_list].sum(axis=1) >= 2
-all_case_df_2_callers = all_case_df_dedup[callers_2_hit] 
-splited_info = all_case_df_2_callers.reset_index()['index'].str.split("|", expand=True)
-splited_info.columns = ["#CHROM", "POS", "REF",  "ALT"]
-splited_info['callers'] = all_case_df_2_callers.apply(lambda row: ';'.join([caller for caller, value in row[caller_list].items() if value]), axis=1).values
-splited_info['case'] = all_case_df_2_callers['case'].values
-
-custom_order = ['chr' + str(i) for i in range(1, 23)] + ['chrX', 'chrY']
-sorter = ['chr'+str(i) for i in range(1, 23)] + ['chrX', 'chrY']
-splited_info['#CHROM'] = splited_info['#CHROM'].astype('category')
-splited_info['#CHROM'] = splited_info['#CHROM'].cat.set_categories(sorter)
-splited_info = splited_info.sort_values(by=['#CHROM', 'POS'])
-splited_info = splited_info.reset_index(drop=True)   
+# merge VCF to dataframe
+result_df, all_case_df, caller_stat_df =  merge_vcf(sample_sheet_path, variants_calling_dir)
 
 # save files
-splited_info.to_csv(output_merged_vcf_path, sep="\t", index=False)
+result_df.to_csv(output_merged_vcf_path, sep="\t", index=False)
 caller_stat_df.to_csv(output_stat_path)
-venn_plot(all_case_df.loc[:, caller_list], 
-          3, 
-          output_venn_path)
+
+venn_plot(all_case_df.loc[:, caller_list], 3, output_venn_path)

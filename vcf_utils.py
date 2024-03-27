@@ -107,3 +107,68 @@ def venn_plot(caller_df, n_callers, plot_path):
     venn3(subsets=subset_sizes, set_labels=caller_df.columns)
     plt.title(f'Venn Diagram: {", ".join(caller_df.columns)}')
     plt.savefig(plot_path)
+    
+def merge_vcf(sample_sheet_path, variants_calling_dir):
+    sample_sheet = pd.read_csv(sample_sheet_path, sep="\t")
+    unique_case_IDs = sample_sheet.loc[:, "Case ID"].unique() 
+
+    all_case_df = pd.DataFrame()
+    caller_list = ["muse", "mutect2", "varscan"]
+    caller_stat_df = pd.DataFrame(columns=["all"] 
+                                        + [f"{caller}_raw" for caller in caller_list]
+                                        + [f"{caller}_filtered" for caller in caller_list]
+                                        + ["2_caller"],
+                                index=pd.Index(unique_case_IDs, name="case_ID"))
+
+    for case_ID in unique_case_IDs: # "TCGA-W5-AA2R" # progressing bar
+        
+        result_dict = {
+            "muse": preprocess_vcf(vcf_file=f"{variants_calling_dir}/muse/{case_ID}.MuSE.vcf"),
+            "mutect2": preprocess_vcf(vcf_file=f"{variants_calling_dir}/mutect/{case_ID}.splited.vcf"),
+            "varscan": pd.concat([
+                preprocess_vcf(vcf_file=f"{variants_calling_dir}/varscan/{case_ID}.varscan.indel.Somatic.hc.vcf"),
+                preprocess_vcf(vcf_file=f"{variants_calling_dir}/varscan/{case_ID}.varscan.snp.Somatic.hc.vcf")
+            ])
+        }
+
+        # merge dataframes and filter by DP, AD, AF
+        case_df = pd.DataFrame()
+        for package_name, caller_df in result_dict.items():
+            filtered_df = vcf_df_filter(caller_df)
+            caller_stat_df.loc[case_ID, f"{package_name}_raw"] = len(caller_df)
+            caller_stat_df.loc[case_ID, f"{package_name}_filtered"] = len(filtered_df)
+            
+            filtered_df = pd.DataFrame(True, index=filtered_df.index, columns=[package_name])
+            case_df = pd.concat([case_df, filtered_df], axis=1)
+        
+        case_df = case_df.fillna(False).infer_objects(copy=False)
+        caller_2hit_filter = case_df.loc[:, caller_list].sum(axis=1) >= 2
+        caller_stat_df.loc[case_ID, "all"] = len(case_df)
+        caller_stat_df.loc[case_ID, "2_caller"] = caller_2hit_filter.sum()
+        
+        case_df["case"] = case_ID
+        all_case_df = pd.concat([all_case_df, case_df])
+        print(f"{case_ID} is merged")
+
+    # all_case_df
+    all_case_df_gb = all_case_df.groupby(all_case_df.index)
+    all_case_df.groupby("case").size()
+
+    # merge same ID
+    all_case_df_dedup = all_case_df_gb.agg({'muse':'max',
+                                            'mutect2':'max',
+                                            'varscan':'max',
+                                            'case': lambda x: ','.join(x)})
+    callers_2_hit = all_case_df_dedup.loc[:, caller_list].sum(axis=1) >= 2
+    all_case_df_2_callers = all_case_df_dedup[callers_2_hit] 
+    result_df = all_case_df_2_callers.reset_index()['index'].str.split("|", expand=True)
+    result_df.columns = ["#CHROM", "POS", "REF",  "ALT"]
+    result_df['callers'] = all_case_df_2_callers.apply(lambda row: ';'.join([caller for caller, value in row[caller_list].items() if value]), axis=1).values
+    result_df['case'] = all_case_df_2_callers['case'].values
+
+    custom_order = ['chr' + str(i) for i in range(1, 23)] + ['chrX', 'chrY']
+    result_df['#CHROM'] = result_df['#CHROM'].astype('category')
+    result_df['#CHROM'] = result_df['#CHROM'].cat.set_categories(custom_order)
+    result_df = result_df.sort_values(by=['#CHROM', 'POS'])
+    result_df = result_df.reset_index(drop=True)
+    return result_df, all_case_df, caller_stat_df

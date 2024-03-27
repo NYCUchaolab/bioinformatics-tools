@@ -38,14 +38,12 @@ for case_ID in unique_case_IDs: # "TCGA-W5-AA2R" # progressing bar
 
     # merge dataframes
     case_df = pd.DataFrame()
-    for package_name in result_dict:
-        
-        sub_df = result_dict[package_name]
-        caller_stat_df.loc[case_ID, f"{package_name}_raw"] = len(sub_df)
-        filtered_df = vcf_df_filter(sub_df)
+    for package_name, caller_df in result_dict.items():
+        caller_stat_df.loc[case_ID, f"{package_name}_raw"] = len(caller_df)
+        filtered_df = vcf_df_filter(caller_df)
         caller_stat_df.loc[case_ID, f"{package_name}_filtered"] = len(filtered_df)
-        sub_df = pd.DataFrame(True, index=sub_df.index, columns=[package_name])
-        case_df = pd.concat([case_df, sub_df], axis=1)
+        filtered_df = pd.DataFrame(True, index=filtered_df.index, columns=[package_name])
+        case_df = pd.concat([case_df, filtered_df], axis=1)
     
     case_df = case_df.fillna(False).infer_objects(copy=False)
     caller_2hit_filter = case_df.loc[:, caller_list].sum(axis=1) >= 2

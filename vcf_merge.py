@@ -18,7 +18,6 @@ unique_case_IDs = sample_sheet.loc[:, "Case ID"].unique()
 all_case_df = pd.DataFrame()
 all_case_stat = pd.DataFrame()
 caller_list = ["muse", "mutect2", "varscan"]
-result_dict = {}
 caller_stat_df = pd.DataFrame(columns=["all"] 
                                     + [f"{caller}_raw" for caller in caller_list]
                                     + [f"{caller}_filtered" for caller in caller_list]
@@ -28,11 +27,14 @@ caller_stat_df.index.name = "case_ID"
 
 for case_ID in unique_case_IDs: # "TCGA-W5-AA2R" # progressing bar
     
-    result_dict["muse"] = preprocessing_vcf(vcf_file=f"./variants_calling/muse/{case_ID}.MuSE.vcf")
-    result_dict["mutect2"] = preprocessing_vcf(vcf_file=f"./variants_calling/mutect/{case_ID}.splited.vcf")
-    varscan_indel = preprocessing_vcf(vcf_file=f"./variants_calling/varscan/{case_ID}.varscan.indel.Somatic.hc.vcf")
-    varscan_snp = preprocessing_vcf(vcf_file=f"./variants_calling/varscan/{case_ID}.varscan.snp.Somatic.hc.vcf")
-    result_dict["varscan"] = pd.concat([varscan_indel, varscan_snp])
+    result_dict = {
+        "muse": preprocess_vcf(vcf_file=f"./variants_calling/muse/{case_ID}.MuSE.vcf"),
+        "mutect2": preprocess_vcf(vcf_file=f"./variants_calling/mutect/{case_ID}.splited.vcf"),
+        "varscan": pd.concat([
+            preprocess_vcf(vcf_file=f"./variants_calling/varscan/{case_ID}.varscan.indel.Somatic.hc.vcf"),
+            preprocess_vcf(vcf_file=f"./variants_calling/varscan/{case_ID}.varscan.snp.Somatic.hc.vcf")
+        ])
+    }
 
     # merge dataframes
     case_df = pd.DataFrame()

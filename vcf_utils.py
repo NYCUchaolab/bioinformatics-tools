@@ -71,7 +71,7 @@ def parse_info(format, info_str):
         raise ValueError(f"{format} is an Unexpected format")
     return DP, AD, AF
 
-def preprocessing_vcf(vcf_file):
+def preprocess_vcf(vcf_file):
     vcf_df = open_vcf(vcf_file)
     vcf_df = vcf_df.loc[vcf_df.FILTER == "PASS"] # keep "PASS"
     

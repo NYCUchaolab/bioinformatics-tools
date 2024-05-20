@@ -10,7 +10,7 @@
 - [x]  bam → fastq sh
 - [x]  fastqc & multiqc
 - [ ]  trim fastq (Trimmomatic)
-- [x]  fastq → bam (BWA-mem)
+- [ ]  fastq → bam (BWA-mem)
 - [x]  vcf merge python
     - [x]  preprocessing
     - [x]  merge
@@ -26,6 +26,12 @@
 - [ ]  bam → count matrix (RSEM)
 - [ ]  visualize count matrix
 
-### others
+### Methylation
+- [ ]  preprocessing
+- [ ]  DMP
+- [ ]  DMR 
+
+### Others
+- [ ]  config
 - [x]  template
 - [x]  send message python script(Telegram)

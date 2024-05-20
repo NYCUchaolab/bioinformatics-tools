@@ -36,8 +36,8 @@ do
     new_sample_ID=${sample[8]}
 
     bam_path=${download_dir}/tmp/${GDC_ID}/${file_name}
-    mv ${bam_path} ${download_dir}/${new_sample_ID}.bam
-	mv ${bam_path/.bam/.bai} ${download_dir}/${new_sample_ID}.bam.bai
+    mv ${bam_path} ${download_dir}/${new_sample_ID}.raw.bam
+	mv ${bam_path/.bam/.bai} ${download_dir}/${new_sample_ID}.raw.bam.bai
 done
 
 # delete files

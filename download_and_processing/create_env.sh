@@ -8,13 +8,14 @@ mv gdc-client ../
 rm gdc-client_v1.6.1_Ubuntu_x64.zip
 
 # preprocessing
+source "/home/${USER}/miniconda3/etc/profile.d/conda.sh" 
 conda create -n wes-preprocessing python=3.8 -y
 conda activate wes-preprocessing
 conda install mamba -y
 mamba install fastqc multiqc gatk4 samtools bedtools bwa picard qualimap trimmomatic pandas requests -y
 
 # variants calling
-conda create -n wes-variants-calling -y
+conda create -n wes-variants-calling python=3.8 -y
 conda activate wes-variants-calling
 conda install mamba -y
-mamba install pindel muse varscan -y
+mamba install gatk4 pindel muse varscan bcftools openjdk=8 -y

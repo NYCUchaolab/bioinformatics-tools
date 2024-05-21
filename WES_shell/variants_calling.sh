@@ -57,9 +57,9 @@ run_muse(){
     tumor_file="${bam_dir}/${case_ID}-T.sorted.du.bqsr.bam"
     normal_file="${bam_dir}/${case_ID}-N.sorted.du.bqsr.bam"
     
-    MuSE call -f ${ref_fa} -O ${muse_dir}/${sample_ID} ${tumor_file} ${normal_file} > "${muse_dir}/log/${case_ID}.log" 2>&1 &
-    MuSE sump -I ${muse_dir}/${sample_ID}.MuSE.txt -E -D ${dbsnp} -O ${muse_dir}/${sample_ID}.MuSE.vcf  >> "${muse_dir}/log/${case_ID}.log" 2>&1 &
-}
+    MuSE call -f ${ref_fa} -O ${muse_dir}/${case_ID} ${tumor_file} ${normal_file} > "${muse_dir}/log/${case_ID}.MuSE.log" 2>&1 
+    MuSE sump -I ${muse_dir}/${case_ID}.MuSE.txt -E -D ${dbsnp} -O ${muse_dir}/${case_ID}.MuSE.vcf  >> "${muse_dir}/log/${case_ID}.MuSE.log" 2>&1
+    }
 
 run_varscan(){
 
@@ -71,7 +71,7 @@ run_varscan(){
     samtools mpileup \
     -f ${ref_fa} \
     -q 1 \
-    -B  \
+    -B \
     ${bam_dir}/${normal}.sorted.du.bqsr.bam \
     ${bam_dir}/${tumor}.sorted.du.bqsr.bam \
     > ${varscan_dir}/${case_ID}_intermediate_mpileup.pileup
@@ -106,21 +106,44 @@ run_varscan(){
 
 }
 
+generate_pindel_config(){
+    case_ID=${1}
+    echo "${bam_dir}/${case_ID}-N.sorted.du.bqsr.bam 250 ${case_ID}_N" > ${config_file}
+    echo "${bam_dir}/${case_ID}-T.sorted.du.bqsr.bam 250 ${case_ID}_T" >> ${config_file}    
+    
+    echo "indel.filter.input = ${pindel_dir}/${case_ID}.all.head" > ${filter_config_file}
+    echo "indel.filter.vaf = 0.05" >> ${filter_config_file}
+    echo "indel.filter.cov = 20" >> ${filter_config_file}
+    echo "indel.filter.hom = 6" >> ${filter_config_file}
+    echo "indel.filter.pindel2vcf = pindel2vcf" >> ${filter_config_file}
+    echo "indel.filter.reference = ${ref_fa}" >> ${filter_config_file}
+    echo "indel.filter.referencename = $(basename "${ref_fa}")" >> ${filter_config_file}
+    echo "indel.filter.referencedate = $(date +%Y%m%d)" >> ${filter_config_file}
+    echo "indel.filter.output = ${pindel_dir}/${case_ID}.indel.filtered.vcf" >> ${filter_config_file}
+}
+
+
 run_pindel(){
     case_ID=${1}
+    config_file="${pindel_dir}/${case_ID}.config.txt"
+    filter_config_file="${pindel_dir}/${case_ID}.indel.filter.config"
+    generate_pindel_config ${case_ID}
 
-    echo "${pindel_dir}/${case_ID}_N*bam 250 ${case_ID}_N" > "${pindel_dir}/${case_ID}.config.txt"
-    echo "${pindel_dir}/${case_ID}_T*bam 250 ${case_ID}_T" >> "${pindel_dir}/${case_ID}.config.txt"
-    
     # step 1: pindel variant calling
-    pindel -f ${ref_fa} -i "${pindel_dir}/${case_ID}.config.txt" -c ALL -T ${threads} -o "${pindel_dir}/pindel/${case_ID}.Pindel"
-    
-    #step 2: extract indel summary lines using
-    grep ChrID "${pindel_dir}/${case_ID}.Pindel_D" > "${pindel_dir}/${case_ID}.D.head"
-    grep ChrID "${pindel_dir}/${case_ID}.Pindel_SI" > "${pindel_dir}/${case_ID}.SI.head"
-    cat "${pindel_dir}/${case_ID}.D.head" "${pindel_dir}/${case_ID}.SI.head" > ./variants_calling/pindel/${case_ID}.all.head
-    
-    #run pindel2vcf
-    pindel2vcf -R $(basename "${ref_fa}") -r ${ref_fa} -p "${pindel_dir}/${case_ID}.all.head" -d date +%Y%m%d -v "${pindel_dir}/${case_ID}.d_SI.Pindel.vcf" -G
+    pindel -f ${ref_fa} -i ${config_file} -c ALL -T ${threads} -o ${pindel_dir}/${case_ID}.Pindel
 
+    # step 2: extract indel summary lines
+    grep ChrID ${pindel_dir}/${case_ID}.Pindel_D > ${pindel_dir}/${case_ID}.D.head
+    grep ChrID ${pindel_dir}/${case_ID}.Pindel_SI > ${pindel_dir}/${case_ID}.SI.head
+    cat ${pindel_dir}/${case_ID}.D.head ${pindel_dir}/${case_ID}.SI.head > ${pindel_dir}/${case_ID}.all.head
+
+    #step 3: run the provided perl script with an updated configuration file
+    #cd ${pindel_dir}
+    
+    perl "${tools_dir}/WES_shell/somatic_indelfilter.pl" "${pindel_dir}/${case_ID}.indel.filter.config"
+    
+    # ${case_ID} 
+    rm ${config_file}
+    rm ${filter_config_file}
+    
 }

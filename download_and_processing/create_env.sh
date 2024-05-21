@@ -18,4 +18,4 @@ mamba install fastqc multiqc gatk4 samtools bedtools bwa picard qualimap trimmom
 conda create -n wes-variants-calling python=3.8 -y
 conda activate wes-variants-calling
 conda install mamba -y
-mamba install gatk4 pindel muse varscan bcftools openjdk=8 -y
+mamba install gatk4 pindel muse varscan bcftools openjdk=8 samtools -y

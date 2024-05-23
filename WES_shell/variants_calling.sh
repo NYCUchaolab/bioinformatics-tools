@@ -5,7 +5,7 @@ run_mutect(){
     tumor_file="${bam_dir}/${case_ID}-T.sorted.du.bqsr.bam"
     normal_file="${bam_dir}/${case_ID}-N.sorted.du.bqsr.bam"
     
-    gatk --java-options "-Xmx4G" Mutect2 \
+    gatk --java-options "-XX:ParallelGCThreads=${threads}" Mutect2 \
     -R ${ref_fa} \
     -I ${tumor_file} \
     -I ${normal_file} \
@@ -16,25 +16,25 @@ run_mutect(){
     -pon ${pon} \
     -O "${mutect_dir}/${case_ID}.vcf" > "${mutect_dir}/log/${case_ID}.log" 2>&1
     
-    gatk --java-options "-Xmx10G" GetPileupSummaries \
+    gatk --java-options "-XX:ParallelGCThreads=${threads}" GetPileupSummaries \
     -I ${tumor_file} \
     -V ${small_exac} \
     -L ${small_exac}  \
     -O "${mutect_dir}/${case_ID}-T.pileups.table" >> "${mutect_dir}/log/${case_ID}.log" 2>&1
 
-    gatk --java-options "-Xmx10G" GetPileupSummaries \
+    gatk --java-options "-XX:ParallelGCThreads=${threads}" GetPileupSummaries \
     -I ${normal_file} \
     -V ${small_exac} \
     -L ${small_exac}  \
     -O "${mutect_dir}/${case_ID}-N.pileups.table" >> "${mutect_dir}/log/${case_ID}.log" 2>&1
 
-    gatk --java-options "-Xmx10G" CalculateContamination \
+    gatk --java-options "-XX:ParallelGCThreads=${threads}" CalculateContamination \
     -I "${mutect_dir}/${case_ID}-T.pileups.table" \
     -matched "${mutect_dir}/${case_ID}-N.pileups.table" \
     -O "${mutect_dir}/${case_ID}.contamination.table" \
     -tumor-segmentation "${mutect_dir}/${case_ID}.segments.table" >> "${mutect_dir}/log/${case_ID}.log" 2>&1
 
-    gatk --java-options "-Xmx10G" FilterMutectCalls \
+    gatk --java-options "-XX:ParallelGCThreads=${threads}" FilterMutectCalls \
     -V "${mutect_dir}/${case_ID}.vcf" \
     --tumor-segmentation "${mutect_dir}/${case_ID}.segments.table" \
     --contamination-table "${mutect_dir}/${case_ID}.contamination.table" \
@@ -43,12 +43,12 @@ run_mutect(){
 
     bcftools norm \
     -m-any \
-    -cx\
+    -cx \
     --check-ref \
     -xw \
     -f ${ref_fa} \
     "${mutect_dir}/${case_ID}.filtered.vcf" \
-    -o "${mutect_dir}/${case_ID}.splited.vcf" >> "${mutect_dir}/log/${case_ID}.log" 2>&1
+    -o "${mutect_dir}/${case_ID}.mutect.vcf" >> "${mutect_dir}/log/${case_ID}.log" 2>&1
 }
 
 
@@ -57,23 +57,23 @@ run_muse(){
     tumor_file="${bam_dir}/${case_ID}-T.sorted.du.bqsr.bam"
     normal_file="${bam_dir}/${case_ID}-N.sorted.du.bqsr.bam"
     
-    MuSE call -f ${ref_fa} -O ${muse_dir}/${case_ID} ${tumor_file} ${normal_file} > "${muse_dir}/log/${case_ID}.MuSE.log" 2>&1 
-    MuSE sump -I ${muse_dir}/${case_ID}.MuSE.txt -E -D ${dbsnp} -O ${muse_dir}/${case_ID}.MuSE.vcf  >> "${muse_dir}/log/${case_ID}.MuSE.log" 2>&1
+    MuSE call -f ${ref_fa} -O ${muse_dir}/${case_ID} ${tumor_file} ${normal_file} > "${muse_dir}/log/${case_ID}.muse.log" 2>&1 
+    MuSE sump -I ${muse_dir}/${case_ID}.muse.txt -E -D ${dbsnp} -O ${muse_dir}/${case_ID}.muse.vcf  >> "${muse_dir}/log/${case_ID}.muse.log" 2>&1
     }
 
 run_varscan(){
 
     case_ID=${1}
-    tumor="${case_ID}-T"
-    normal="${case_ID}-N"
+    tumor_file="${bam_dir}/${case_ID}-T.sorted.du.bqsr.bam"
+    normal_file="${bam_dir}/${case_ID}-N.sorted.du.bqsr.bam"
 
     # Step 1: Mpileup; Samtools
     samtools mpileup \
     -f ${ref_fa} \
     -q 1 \
     -B \
-    ${bam_dir}/${normal}.sorted.du.bqsr.bam \
-    ${bam_dir}/${tumor}.sorted.du.bqsr.bam \
+    ${normal_file} \
+    ${tumor_file} \
     > ${varscan_dir}/${case_ID}_intermediate_mpileup.pileup
     echo "step1 samtools mpileup ${case_ID} done"
     
@@ -108,9 +108,11 @@ run_varscan(){
 
 generate_pindel_config(){
     case_ID=${1}
-    echo "${bam_dir}/${case_ID}-N.sorted.du.bqsr.bam 250 ${case_ID}_N" > ${config_file}
-    echo "${bam_dir}/${case_ID}-T.sorted.du.bqsr.bam 250 ${case_ID}_T" >> ${config_file}    
+    # make pindel config
+    echo "${bam_dir}/${case_ID}-N.sorted.du.bqsr.bam 250 ${case_ID}-N" > ${config_file}
+    echo "${bam_dir}/${case_ID}-T.sorted.du.bqsr.bam 250 ${case_ID}-T" >> ${config_file}    
     
+    # filter config
     echo "indel.filter.input = ${pindel_dir}/${case_ID}.all.head" > ${filter_config_file}
     echo "indel.filter.vaf = 0.05" >> ${filter_config_file}
     echo "indel.filter.cov = 20" >> ${filter_config_file}
@@ -125,24 +127,24 @@ generate_pindel_config(){
 
 run_pindel(){
     case_ID=${1}
+    # step 1: make config files
     config_file="${pindel_dir}/${case_ID}.config.txt"
     filter_config_file="${pindel_dir}/${case_ID}.indel.filter.config"
     generate_pindel_config ${case_ID}
 
-    # step 1: pindel variant calling
+    # step 2: pindel variant calling
     pindel -f ${ref_fa} -i ${config_file} -c ALL -T ${threads} -o ${pindel_dir}/${case_ID}.Pindel
 
-    # step 2: extract indel summary lines
+    # step 3: extract indel summary lines
     grep ChrID ${pindel_dir}/${case_ID}.Pindel_D > ${pindel_dir}/${case_ID}.D.head
     grep ChrID ${pindel_dir}/${case_ID}.Pindel_SI > ${pindel_dir}/${case_ID}.SI.head
     cat ${pindel_dir}/${case_ID}.D.head ${pindel_dir}/${case_ID}.SI.head > ${pindel_dir}/${case_ID}.all.head
 
-    #step 3: run the provided perl script with an updated configuration file
-    #cd ${pindel_dir}
+    # step 4: run the provided perl script with an updated configuration file
     
-    perl "${tools_dir}/WES_shell/somatic_indelfilter.pl" "${pindel_dir}/${case_ID}.indel.filter.config"
+    perl "${tools_dir}/WES_shell/somatic_indelfilter.pl" "${pindel_dir}/${case_ID}.pindel.config"
     
-    # ${case_ID} 
+    # step 5: remove config files
     rm ${config_file}
     rm ${filter_config_file}
     

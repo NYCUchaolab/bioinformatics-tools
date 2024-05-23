@@ -8,7 +8,7 @@ cd ${project_dir}
 bam_dir="${project_dir}/bqsr_bam"
 
 # package config and mkdir
-muse_dir="variants_calling/MuSE"
+muse_dir="variants_calling/muse"
 mkdir -p variants_calling && chmod a+rw variants_calling
 mkdir -p ${muse_dir} && chmod a+rw ${muse_dir}
 mkdir -p ${muse_dir}/log && chmod a+rw ${muse_dir}/log

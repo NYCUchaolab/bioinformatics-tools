@@ -20,7 +20,7 @@ bqsr(){
 		O="${output_bam_dir}/${sample_ID}.sorted.du.bam" \
 		M="${output_bam_dir}/${sample_ID}.sorted.du.matrix.txt" \
 		REMOVE_DUPLICATES=false \
-        CREATE_INDEX=true 2>> MARK_DUP.log
+        CREATE_INDEX=true
 
     # step3. 校正base品質
 	gatk BaseRecalibrator \

@@ -146,9 +146,6 @@ os.makedirs("variants_calling/merged_vcf", exist_ok=True)
 case_IDs = pd.read_csv("case_IDs.tsv", sep="\t", header=None)[0].tolist()
 all_case_df = pd.DataFrame()
 caller_list = ["muse", "mutect2", "varscan", "pindel"]
-case_IDs
-#unique_case_IDs = sample_sheet.loc[:, "Case ID"].unique()
-
 
 caller_stat_df = pd.DataFrame(columns=["all"] 
                                     + [f"{caller}_raw" for caller in caller_list]
@@ -159,12 +156,12 @@ caller_stat_df = pd.DataFrame(columns=["all"]
 for case_ID in case_IDs: # ["TCGA-W5-AA2R"]:##
     print(case_ID)
     result_dict = {
-        "muse": preprocess_vcf(vcf_file=f"variants_calling/muse/{case_ID}.MuSE.vcf"),
-        "mutect2": preprocess_vcf(vcf_file=f"variants_calling/mutect/{case_ID}.splited.vcf"),
+        "muse": preprocess_vcf(vcf_file=f"variants_calling/muse/{case_ID}.muse.vcf"),
+        "mutect2": preprocess_vcf(vcf_file=f"variants_calling/mutect/{case_ID}.mutect.vcf"),
         "varscan": pd.concat([
             preprocess_vcf(vcf_file=f"variants_calling/varscan/{case_ID}.varscan.indel.Somatic.hc.vcf"),
             preprocess_vcf(vcf_file=f"variants_calling/varscan/{case_ID}.varscan.snp.Somatic.hc.vcf")]),
-        "pindel": preprocess_vcf(vcf_file=f"variants_calling/pindel/{case_ID}.indel.filtered.vcf")
+        "pindel": preprocess_vcf(vcf_file=f"variants_calling/pindel/{case_ID}.pindel.vcf")
     }
     # filter DP, AD, AF then merge all caller -> case_df
     case_df = pd.DataFrame()

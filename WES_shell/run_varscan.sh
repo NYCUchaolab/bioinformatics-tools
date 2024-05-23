@@ -11,6 +11,7 @@ bam_dir="${project_dir}/bqsr_bam"
 
 # mkdir
 varscan_dir=${project_dir}/variants_calling/varscan
+mkdir -p variants_calling && chmod a+rw variants_calling
 mkdir -p ${varscan_dir} && chmod a+rw ${varscan_dir}
 mkdir -p ${varscan_dir}/log && chmod a+rw ${varscan_dir}/log
 

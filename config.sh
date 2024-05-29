@@ -12,4 +12,7 @@ pon="${db_dir}/1000g_pon.hg38.vcf.gz"
 ref_fa="/home/data/dataset/BWA_index/GRCh38.d1.vd1.fa"
 small_exac="${db_dir}/small_exac_common_3.hg38.vcf.gz"
 
+# VEP setting
+assembly=GRCh38
+
 source "/home/${USER}/miniconda3/etc/profile.d/conda.sh" 

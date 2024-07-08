@@ -24,7 +24,7 @@
    - Methods : ORA, GSEA
    - Database : KEGG, GO
 
-<img src="https://github.com/Juan-Jeffery/bioinformatics-tools/blob/main/RNA_shell/img/RNA_pipeline.png" width="600" height="600">
+<img src="https://github.com/Juan-Jeffery/bioinformatics-tools/blob/main/RNA_shell/img/RNA_pipeline.png" width="600" height="1000">
 
 ## Reference file
 **GRCh38.d1.vd1.fa & gencode.v36.annotation.gtf**
@@ -33,15 +33,12 @@ The ref and ref index file can be downloaded from [GDC Website](https://gdc.canc
 
 If you don't want to install the `.fai`, you can also index them yourself.
 
-**gencode.v22.annotation.gtf**
-
-The ref and ref index file can be downloaded from [GDC Website](https://gdc.cancer.gov/about-data/gdc-data-processing/gdc-reference-files).
-
 **Homo_sapiens.GRCh38.cdna.all.fa.gz (ref for Kallistal & Salmon)**
 
 This file can be downloaded from [ensemble Website](https://ftp.ensembl.org/pub/release-111/fasta/homo_sapiens/cdna/).
 
 **grch38_genome.tar.gz (ref for HISAT2)**
+
 This file can be downloaded from [ensemble Website](https://genome-idx.s3.amazonaws.com/hisat/)
 
 ## Package version

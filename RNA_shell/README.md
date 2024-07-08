@@ -24,7 +24,7 @@
    - Methods : ORA, GSEA
    - Database : KEGG, GO
 
-<img src="https://github.com/Juan-Jeffery/bioinformatics-tools/blob/main/RNA_shell/img/RNA_pipeline.png" width="600" height="1000">
+<img src="https://github.com/Juan-Jeffery/bioinformatics-tools/blob/main/RNA_shell/img/RNA_pipeline.png" width="600" height="800">
 
 ## Reference file
 **GRCh38.d1.vd1.fa & gencode.v36.annotation.gtf**

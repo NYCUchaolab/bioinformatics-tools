@@ -12,6 +12,7 @@
       - genome-mapping : stringTie
       - Transcriptome-mapping : RSEM
       - Alignment-free : salmon, kallisto
+   
    After completing Expression Quantification, draw the express distribution graph.
 5. **Data preprocessing :**
    - Remove the Batch effect

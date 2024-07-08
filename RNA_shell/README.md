@@ -1,4 +1,4 @@
-# DNA variant calling pipeline
+# RNA seq pipeline
 
 ## Workflow
 1. **Quality Control :** FastQC & MultiQC -> TrimMomatic, qualimap

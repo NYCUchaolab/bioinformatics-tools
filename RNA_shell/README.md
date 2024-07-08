@@ -39,7 +39,7 @@ This file can be downloaded from [ensemble Website](https://ftp.ensembl.org/pub/
 
 **grch38_genome.tar.gz (ref for HISAT2)**
 
-This file can be downloaded from [ensemble Website](https://genome-idx.s3.amazonaws.com/hisat/)
+This file can be downloaded from [hisat Website](https://genome-idx.s3.amazonaws.com/hisat/)
 
 ## Package version
 Make sure to verify and install the required packages by reviewing the `.yml` file.

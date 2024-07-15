@@ -1,4 +1,4 @@
-name: rna_seq
+name: RNA_seq
 channels:
   - bioconda
   - conda-forge

@@ -1,5 +1,21 @@
 # Bioinformatics Tools
+## ENVS
+ - create env file
+ - WES environment.yml file
+ - RNA environment.yml file
+ - scRNA(not done) environment.yml file
+   
+## Download and processing
+ - Method to download bam file from TCGA & SRA (not done)
+ - bam to fastq & QC
 
+## WES, RNA, scRNA shell
+ - Executable files, from bam to the final step (QC included in Download and Processing)
+
+## Other
+ - 不知道是啥
+
+---
 ## TODO
 ### Download and preprocessing
 - [x]  download bam from GDC
@@ -26,12 +42,12 @@
 - [ ]  maf → maftool format maf
 
 ### RNA-seq
-- [ ]  env file
+- [x]  env file
 - [x]  make indices (RSEM, kallisto)
 - [x]  fastq → abundance table (kallisto, K-mer base pseudo alignment method)
 - [x]  fastq → bam (STAR)
-- [ ]  bam → count matrix (RSEM)
-- [ ]  visualize count matrix
+- [x]  bam → count matrix (RSEM)
+- [ ]  visualize count matrix & distribution
   
 ### Methylation
 - [ ]  preprocessing

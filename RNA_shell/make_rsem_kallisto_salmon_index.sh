@@ -28,3 +28,6 @@ cd ${kallisto_index_dir}
 kallisto index \
     -i "${kallisto_index_dir}/kallisto_index.idx" \
     "${kallisto_index_dir}/Homo_sapiens.GRCh38.cdna.all.fa.gz"
+
+# make salmon-index
+salmon index -t Homo_sapiens.GRCh38.cdna.all.fa.gz -i athal_index_salmon

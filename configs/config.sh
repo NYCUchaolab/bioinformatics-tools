@@ -1,8 +1,8 @@
-project_dir="/home/data/dataset/CHOL_2sample_new"
-sample_sheet="${project_dir}/gdc_sample_sheet_test.2024-02-26.tsv"
-GDC_token="/home/data/tools/gdc-user-token.2024-05-15T09_11_50.917Z.txt"
+project_dir="/home/blue/code/test_variant_calling"
+sample_sheet="${project_dir}/2sample_sheet.tsv"
+GDC_token="${project_dir}/GDC_token.txt"
 tools_dir="${project_dir}/bioinformatics-tools"
-threads=20
+threads=8
 
 # ref config
 db_dir="/home/data/dataset/gatk_file"

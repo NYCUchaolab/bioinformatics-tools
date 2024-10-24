@@ -286,7 +286,25 @@ def parse_arguments():
     parser.add_argument("--pindel_suffix", type=str, default=".filtered.vcf", help="Suffix for Pindel VCF files")
     
     return parser.parse_args()
+
+def show_yuchao_lab_ascii_img(file_path):
+    with open(file_path, 'r') as f:
+        ascii_img = f.read()
+        print(ascii_img)
+
+def get_ascii_file_path():
+
+    # 構建 ascii_yuchao_lab.txt 的路徑
+    script_path = os.path.abspath(__file__)
+    script_directory = os.path.dirname(script_path)
+    ascii_file_path = os.path.join(os.path.dirname(script_directory), 'ascii_yuchao_lab.txt')
+    return ascii_file_path
+
+
 def main(args):
+    
+    ascii_file_path = get_ascii_file_path()
+    show_yuchao_lab_ascii_img(ascii_file_path)
     project_dir = args.project_dir
     os.chdir(project_dir)
     os.makedirs("variants_calling/merged_vcf", exist_ok=True)

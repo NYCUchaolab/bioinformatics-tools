@@ -1,7 +1,8 @@
 # add channel
 conda config --add channels bioconda 
+conda config --add channels conda-forge 
 
-# gdc-client (avoid conda problem)
+# download gdc-client (avoid conda problem)
 wget https://gdc.cancer.gov/system/files/public/file/gdc-client_v1.6.1_Ubuntu_x64.zip
 unzip gdc-client_v1.6.1_Ubuntu_x64.zip
 mv gdc-client ../
